@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyAWcCrfsjKZyrFZqyV7QUEtCGLnFZ_LyzM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>593125340178</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.chansdev.peopleDiscoveryApp</string>
+	<key>PROJECT_ID</key>
+	<string>local-discovery-app-5c52f</string>
+	<key>STORAGE_BUCKET</key>
+	<string>local-discovery-app-5c52f.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:593125340178:ios:4ec4f1b9a46956d48154cb</string>
+</dict>
+</plist>

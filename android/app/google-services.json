@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "593125340178",
+    "project_id": "local-discovery-app-5c52f",
+    "storage_bucket": "local-discovery-app-5c52f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:593125340178:android:907dcb507e0d7f5a8154cb",
+        "android_client_info": {
+          "package_name": "com.chansdev.people_discovery_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkVlF3Gy2IL0suoiRSwK6X3S8Bu3sVcRI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
