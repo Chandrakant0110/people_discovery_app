@@ -1,4 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import '../models/auth_state.dart';
 
 /// Core Firebase authentication service
@@ -89,24 +91,71 @@ class FirebaseAuthService {
         timeout: timeout,
         verificationCompleted: (PhoneAuthCredential credential) async {
           // Auto-verification completed (Android only)
-          try {
-            await _auth.signInWithCredential(credential);
-          } catch (e) {
-            verificationFailed(AuthError.fromFirebaseException(e));
-          }
+          // Ensure this runs on the main isolate
+          Future.microtask(() async {
+            try {
+              await _auth.signInWithCredential(credential);
+            } catch (e) {
+              // Ensure error callback runs on main thread
+              Future.microtask(() {
+                try {
+                  verificationFailed(AuthError.fromFirebaseException(e));
+                } catch (callbackError) {
+                  // Fallback error handling
+                  debugPrint('[FirebaseAuthService] Error in verificationFailed callback: $callbackError');
+                }
+              });
+            }
+          });
         },
         verificationFailed: (FirebaseAuthException e) {
-          verificationFailed(AuthError.fromFirebaseException(e));
+          // Ensure callback runs on main isolate
+          Future.microtask(() {
+            try {
+              verificationFailed(AuthError.fromFirebaseException(e));
+            } catch (callbackError) {
+              // Fallback error handling
+              debugPrint('[FirebaseAuthService] Error in verificationFailed callback: $callbackError');
+            }
+          });
         },
         codeSent: (String verificationId, int? resendToken) {
-          codeSent(verificationId);
-          if (codeAutoRetrievalTimeout != null) {
-            // Store resend token for later use if needed
-          }
+          // Ensure callback runs on main isolate
+          Future.microtask(() {
+            try {
+              codeSent(verificationId);
+              if (codeAutoRetrievalTimeout != null) {
+                // Store resend token for later use if needed
+              }
+            } catch (callbackError) {
+              // Fallback error handling
+              debugPrint('[FirebaseAuthService] Error in codeSent callback: $callbackError');
+              // Still call verificationFailed as fallback
+              try {
+                Future.microtask(() {
+                  verificationFailed(
+                    AuthError.custom(
+                      type: AuthErrorType.unknown,
+                      message: 'Error processing verification code: ${callbackError.toString()}',
+                    ),
+                  );
+                });
+              } catch (e) {
+                debugPrint('[FirebaseAuthService] Critical error in error callback: $e');
+              }
+            }
+          });
         },
         codeAutoRetrievalTimeout: (String verificationId) {
+          // Ensure callback runs on main isolate
           if (codeAutoRetrievalTimeout != null) {
-            codeAutoRetrievalTimeout(verificationId, null);
+            Future.microtask(() {
+              try {
+                codeAutoRetrievalTimeout(verificationId, null);
+              } catch (callbackError) {
+                debugPrint('[FirebaseAuthService] Error in codeAutoRetrievalTimeout callback: $callbackError');
+              }
+            });
           }
         },
       );

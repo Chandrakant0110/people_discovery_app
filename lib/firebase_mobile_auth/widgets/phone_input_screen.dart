@@ -73,38 +73,52 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       ),
     );
 
-    final result = await _phoneAuthService.sendVerificationCode(
+      final result = await _phoneAuthService.sendVerificationCode(
       phoneNumber: fullPhoneNumber,
       onCodeSent: (verificationId) {
         debugPrint(
           '[Phone Auth] Code sent successfully. Verification ID: $verificationId',
         );
+        // Ensure we're still mounted before updating state
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Verification code sent! Check your SMS.'),
-            duration: Duration(seconds: 3),
-            backgroundColor: Colors.green,
-          ),
-        );
-        widget.onCodeSent(fullPhoneNumber, verificationId);
+        // Use a post-frame callback to ensure context is valid
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Verification code sent! Check your SMS.'),
+                duration: Duration(seconds: 3),
+                backgroundColor: Colors.green,
+              ),
+            );
+            widget.onCodeSent(fullPhoneNumber, verificationId);
+          }
+        });
       },
       onError: (error) {
         debugPrint('[Phone Auth] Error sending code: ${error.message}');
+        // Ensure we're still mounted before updating state
+        if (!mounted) return;
         setState(() {
           _isLoading = false;
           _error = error;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${error.message}'),
-            duration: const Duration(seconds: 4),
-            backgroundColor: Colors.red,
-          ),
-        );
-        widget.onError?.call(error);
+        // Use a post-frame callback to ensure context is valid
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: ${error.message}'),
+                duration: const Duration(seconds: 4),
+                backgroundColor: Colors.red,
+              ),
+            );
+            widget.onError?.call(error);
+          }
+        });
       },
     );
 
