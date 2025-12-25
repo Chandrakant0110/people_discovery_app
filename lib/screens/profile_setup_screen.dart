@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:people_discovery_app/models/user_model.dart';
 import 'package:people_discovery_app/models/portfolio_model.dart';
 import 'package:people_discovery_app/services/firestore_service.dart';
-import 'package:people_discovery_app/services/storage_service.dart';
+import 'package:people_discovery_app/services/storage_service.dart'; // Kept for future use
+import 'package:people_discovery_app/services/imgbb_service.dart';
 
 /// Profile setup screen for new users
 ///
@@ -27,7 +28,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final PageController _pageController = PageController();
   final _formKey = GlobalKey<FormState>();
   final FirestoreService _firestoreService = FirestoreService();
-  final StorageService _storageService = StorageService();
+  // StorageService kept for future use - not used currently
+  // final StorageService _storageService = StorageService();
+  final ImgBBService _imgbbService = ImgBBService();
   final ImagePickerHelper _imagePicker = ImagePickerHelper();
 
   int _currentStep = 0;
@@ -182,10 +185,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     });
 
     try {
-      // Upload profile photo
+      // Upload profile photo using ImgBB
       String? profilePhotoUrl;
       if (_profilePhoto != null) {
-        profilePhotoUrl = await _storageService.uploadProfilePhoto(
+        profilePhotoUrl = await _imgbbService.uploadProfilePhoto(
           userId: widget.userId,
           imageFile: _profilePhoto!,
         );
@@ -250,8 +253,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       // Save portfolio items
       for (var item in _portfolioItems) {
         if (item.imageFile != null && item.imageUrl == null) {
-          // Upload image first
-          final imageUrl = await _storageService.uploadPortfolioImage(
+          // Upload image using ImgBB
+          final imageUrl = await _imgbbService.uploadPortfolioImage(
             userId: widget.userId,
             portfolioId: item.portfolioId,
             imageFile: item.imageFile!,

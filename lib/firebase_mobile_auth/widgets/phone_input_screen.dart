@@ -73,7 +73,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       ),
     );
 
-      final result = await _phoneAuthService.sendVerificationCode(
+    final result = await _phoneAuthService.sendVerificationCode(
       phoneNumber: fullPhoneNumber,
       onCodeSent: (verificationId) {
         debugPrint(
@@ -225,6 +225,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: _phoneController,
+                          // maxLength: 10, different countries have different max lengths (so planning to use some package for this)
                           keyboardType: TextInputType.phone,
                           decoration: InputDecoration(
                             hintText:
