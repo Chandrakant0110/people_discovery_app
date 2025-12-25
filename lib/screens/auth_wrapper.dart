@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:people_discovery_app/firebase_mobile_auth/firebase_mobile_auth.dart';
 import 'package:people_discovery_app/screens/home_screen.dart';
 import 'package:people_discovery_app/screens/auth_screen.dart';
+import 'package:people_discovery_app/screens/profile_setup_screen.dart';
+import 'package:people_discovery_app/services/firestore_service.dart';
 
 /// Wrapper widget that handles authentication state and routing
 /// 
@@ -26,7 +28,8 @@ class AuthWrapper extends StatelessWidget {
           final currentUser = authService.currentUser;
           if (currentUser != null) {
             debugPrint('[AuthWrapper] User authenticated (sync check): ${currentUser.uid}');
-            return HomeScreen(
+            // Check if profile exists asynchronously
+            return _ProfileCheckWidget(
               userId: currentUser.uid,
               phoneNumber: currentUser.phoneNumber,
             );
@@ -44,9 +47,12 @@ class AuthWrapper extends StatelessWidget {
         // snapshot.data will be null if user is not authenticated
         final user = snapshot.data;
         if (user != null) {
-          // User is authenticated - redirect to home screen
+          // User is authenticated - check if profile exists
           debugPrint('[AuthWrapper] User authenticated: ${user.uid}');
-          return HomeScreen(userId: user.uid, phoneNumber: user.phoneNumber);
+          return _ProfileCheckWidget(
+            userId: user.uid,
+            phoneNumber: user.phoneNumber,
+          );
         } else {
           // User is not authenticated - show auth screen
           debugPrint('[AuthWrapper] User not authenticated - showing auth screen');
@@ -54,6 +60,69 @@ class AuthWrapper extends StatelessWidget {
         }
       },
     );
+  }
+}
+
+/// Widget that checks if user profile exists and routes accordingly
+class _ProfileCheckWidget extends StatefulWidget {
+  final String userId;
+  final String? phoneNumber;
+
+  const _ProfileCheckWidget({
+    required this.userId,
+    this.phoneNumber,
+  });
+
+  @override
+  State<_ProfileCheckWidget> createState() => _ProfileCheckWidgetState();
+}
+
+class _ProfileCheckWidgetState extends State<_ProfileCheckWidget> {
+  final FirestoreService _firestoreService = FirestoreService();
+  bool _isChecking = true;
+  bool _profileExists = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkProfile();
+  }
+
+  Future<void> _checkProfile() async {
+    final exists = await _firestoreService.userProfileExists(widget.userId);
+    if (mounted) {
+      setState(() {
+        _isChecking = false;
+        _profileExists = exists;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isChecking) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_profileExists) {
+      // Profile exists - go to home screen
+      debugPrint('[AuthWrapper] Profile exists - navigating to home');
+      return HomeScreen(
+        userId: widget.userId,
+        phoneNumber: widget.phoneNumber,
+      );
+    } else {
+      // Profile doesn't exist - go to profile setup
+      debugPrint('[AuthWrapper] Profile does not exist - navigating to profile setup');
+      return ProfileSetupScreen(
+        userId: widget.userId,
+        phoneNumber: widget.phoneNumber ?? '',
+      );
+    }
   }
 }
 
