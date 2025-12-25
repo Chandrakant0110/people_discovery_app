@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users can read any user profile, but only edit their own
+    match /users/{userId} {
+      allow read: if true; // Anyone can read user profiles
+      allow write: if request.auth != null && request.auth.uid == userId; // Only the user can write their own profile
+    }
+    
+    // Portfolios: public read, owner write
+    match /portfolios/{userId}/{document=**} {
+      allow read: if true; // Anyone can read portfolios
+      allow write: if request.auth != null && request.auth.uid == userId; // Only the owner can write
+    }
+    
+    // Chats: only participants can read/write
+    match /chats/{chatId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid in resource.data.participants);
+    }
+    
+    // Messages: only chat participants can read/write
+    match /messages/{chatId}/{messageId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == resource.data.senderId || 
+         request.auth.uid == resource.data.receiverId);
+    }
+    
+    // Locations and Professions: public read, admin write
+    match /locations/{locationId} {
+      allow read: if true;
+      allow write: if false; // Admin only via console
+    }
+    
+    match /professions/{professionId} {
+      allow read: if true;
+      allow write: if false; // Admin only via console
+    }
+  }
+}
+
